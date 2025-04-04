@@ -73,7 +73,11 @@ Future<dynamic> main(final context) async {
 
         Map<String, dynamic> params = jsonDecode(json.encode(req.query)) as Map<String, dynamic>;
 
-        String account = params['account'];
+         String? account = params['account'] as String?;
+        if (account == null) {
+          res.send('Account required', 400, defaultHeaders);
+          return;
+        }
 
         final MpesaCredentials credentials = credentialsFromEnv(
           context,
@@ -129,11 +133,6 @@ Future<dynamic> main(final context) async {
         break;
 
       case HttpMethods.post:
-        final String databaseId = Platform.environment['DATABASE_ID']!;
-        context.log("DB id => $databaseId");
-
-        final String collectionId = Platform.environment['COLLECTION_ID']!;
-        context.log("Collection id => $collectionId");
 
         String jsonString = json.encode(context.req.body);
         context.log(jsonString);
