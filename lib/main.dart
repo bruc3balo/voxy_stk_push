@@ -107,6 +107,8 @@ Future<dynamic> main(final context) async {
         String? description = params['description'] as String?;
         description ??= 'Trip payment';
 
+        Map<String, dynamic> reqRes = {};
+        int reqResStatus = 200;
         await sentStkPush(
           amount: int.parse(amount),
           number: number,
@@ -141,18 +143,20 @@ Future<dynamic> main(final context) async {
             );
             switch (mpesaLog) {
               case Success<TripMpesaLog>():
-                return res.json(map, 200, defaultHeaders);
+                reqRes = map;
+                reqResStatus = 200;
+                break;
               case Error<TripMpesaLog>():
-                return res.send(
-                  'Payment not saved ${response.checkoutRequestID}',
-                  500,
-                  defaultHeaders,
-                );
+                reqRes = {
+                  'message': 'Payment not saved ${response.checkoutRequestID}'
+                };
+                reqResStatus = 200;
+                break;
             }
           },
         );
 
-
+        return res.json(reqRes, reqResStatus, defaultHeaders);
 
       case HttpMethods.post:
         String jsonString = json.encode(context.req.body);
