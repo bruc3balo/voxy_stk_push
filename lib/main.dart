@@ -103,6 +103,7 @@ Future<dynamic> main(final context) async {
         String? description = params['description'] as String?;
         description ??= 'Trip payment';
 
+        Map<String, dynamic> result = {};
         await sentStkPush(
           amount: int.parse(amount),
           number: number,
@@ -129,11 +130,11 @@ Future<dynamic> main(final context) async {
             //   status: PaymentStatus.waiting,
             // );
 
-            res.json(map, 200, defaultHeaders);
+            result = map;
           },
         );
 
-        break;
+        return res.json(result, 200, defaultHeaders);
 
       case HttpMethods.post:
 
