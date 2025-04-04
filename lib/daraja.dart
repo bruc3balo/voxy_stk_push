@@ -81,27 +81,39 @@ Future<String?> authenticate({
   String basicToken = encodeToBase64(cred);
   String authorization = 'Basic $basicToken';
 
-  Response res = await dio.get(
-    'oauth/v1/generate',
-    queryParameters: {
-      'grant_type': 'client_credentials',
-    },
-    options: Options(
-      sendTimeout: Duration(minutes: 1),
-      receiveTimeout: Duration(minutes: 1),
-      headers: {
-        'Authorization': authorization,
-      },
-    ),
-  );
+  try {
 
-  if (res.statusCode != 200) {
-    onError?.call(res.statusMessage ?? 'Failed to authenticate daraja request');
+    Response res = await dio.get(
+      'oauth/v1/generate',
+      queryParameters: {
+        'grant_type': 'client_credentials',
+      },
+      options: Options(
+        sendTimeout: Duration(minutes: 1),
+        receiveTimeout: Duration(minutes: 1),
+        headers: {
+          'Authorization': authorization,
+        },
+      ),
+    );
+
+    if (res.statusCode != 200) {
+      onError?.call(
+        res.statusMessage ?? 'Failed to authenticate daraja request',
+      );
+      return null;
+    }
+
+    var data = res.data as Map<String, dynamic>;
+    return data['access_token'];
+  } on DioException catch (e, trace) {
+    onError?.call(e.toString());
+    return null;
+  } catch (e, trace) {
+    onError?.call(e.toString());
     return null;
   }
 
-  var data = res.data as Map<String, dynamic>;
-  return data['access_token'];
 }
 
 String authCredentials({

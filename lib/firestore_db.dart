@@ -9,9 +9,20 @@ abstract class TripPaymentRepository {
     required String paymentId,
     required PaymentStatus status,
   });
+
+  Future<TaskResult<void>> setTrip({
+    required String tripId,
+    required String checkoutId,
+  });
+
+  Future<TaskResult<String?>> getTripId({
+    required String checkoutId,
+  });
 }
 
 class FirestoreTripPaymentRepository implements TripPaymentRepository {
+  CollectionReference get tripCheckoutPaymentCollection => Firestore.instance.collection("trips_checkout_map");
+
   CollectionReference tripPaymentCollection(String tripId) => Firestore.instance.collection("trips").document(tripId).collection('payments');
 
   FirestoreTripPaymentRepository({
@@ -31,6 +42,33 @@ class FirestoreTripPaymentRepository implements TripPaymentRepository {
         {
           'status': status.name,
           'updated_at': DateTime.now(),
+        },
+      );
+
+      return Success(null);
+    } catch (e, trace) {
+      return Error(Exception(e));
+    }
+  }
+
+  @override
+  Future<TaskResult<String?>> getTripId({required String checkoutId}) async {
+    try {
+      var result = await tripCheckoutPaymentCollection.document(checkoutId).get();
+
+      return Success(result.map['trip_id']);
+    } catch (e, trace) {
+      return Error(Exception(e));
+    }
+  }
+
+  @override
+  Future<TaskResult<void>> setTrip({required String tripId, required String checkoutId}) async {
+    try {
+      await tripCheckoutPaymentCollection.document(checkoutId).set(
+        {
+          'trip_id': tripId,
+          'checkout_id': checkoutId,
         },
       );
 

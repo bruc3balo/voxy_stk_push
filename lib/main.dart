@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dart_appwrite/dart_appwrite.dart';
 import 'package:voxy_stk_push/firestore_db.dart';
+import 'package:voxy_stk_push/task_result.dart';
 
 import 'daraja.dart';
 import 'models.dart';
@@ -120,15 +121,14 @@ Future<dynamic> main(final context) async {
             res.send(s, 400, defaultHeaders);
           },
           onSuccess: (map) {
-            // TripPaymentRepository repository = FirestoreTripPaymentRepository(
-            //   projectId: Platform.environment['FIREBASE_PROJECT_ID']!,
-            // );
-            //
-            // repository.updatePayment(
-            //   tripId: tripId,
-            //   paymentId: map['CheckoutRequestID'],
-            //   status: PaymentStatus.waiting,
-            // );
+            TripPaymentRepository repository = FirestoreTripPaymentRepository(
+              projectId: Platform.environment['FIREBASE_PROJECT_ID']!,
+            );
+
+            repository.setTrip(
+              tripId: account,
+              checkoutId: map['CheckoutRequestID'],
+            );
 
             result = map;
           },
@@ -158,17 +158,32 @@ Future<dynamic> main(final context) async {
 
         bool success = callback.resultCode == 0;
         String paymentId = callback.checkoutRequestID;
-        String tripId = callback.callbackMetadata?.itemMap['account'];
+
 
         TripPaymentRepository repository = FirestoreTripPaymentRepository(
           projectId: Platform.environment['FIREBASE_PROJECT_ID']!,
         );
 
-        repository.updatePayment(
-          tripId: tripId,
-          paymentId: paymentId,
-          status: success ? PaymentStatus.paid : PaymentStatus.notPaid,
-        );
+        TaskResult<String?> paymentIdResult = await repository.getTripId(checkoutId: paymentId);
+        switch(paymentIdResult) {
+
+          case Success<String?>():
+            String? tripId = paymentIdResult.data;
+            if(tripId == null) {
+              return res.send('Payment not recognized $paymentId', 404, defaultHeaders);
+            }
+
+            repository.updatePayment(
+              tripId: tripId,
+              paymentId: paymentId,
+              status: success ? PaymentStatus.paid : PaymentStatus.notPaid,
+            );
+            break;
+          case Error<String?>():
+            return res.send('Payment not recognized $paymentId', 404, defaultHeaders);
+        }
+
+
         break;
 
       case _:
