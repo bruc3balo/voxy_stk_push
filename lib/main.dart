@@ -129,7 +129,7 @@ Future<dynamic> main(final context) async {
             //   status: PaymentStatus.waiting,
             // );
 
-            res.send(map, 200, defaultHeaders);
+            res.json(map, 200, defaultHeaders);
           },
         );
 
