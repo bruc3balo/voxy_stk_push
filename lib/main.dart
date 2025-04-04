@@ -146,9 +146,10 @@ Future<dynamic> main(final context) async {
                 break;
               case Error<TripMpesaLog>():
                 return res.send(
-                    'Payment not saved ${response.checkoutRequestID}',
-                    500,
-                    defaultHeaders);
+                  'Payment not saved ${response.checkoutRequestID}',
+                  500,
+                  defaultHeaders,
+                );
             }
           },
         );
@@ -187,7 +188,7 @@ Future<dynamic> main(final context) async {
           response: TripMpesaPaymentResponse(
             checkoutRequestId: callback.merchantRequestID,
             merchantRequestId: callback.merchantRequestID,
-            responseCode: callback.resultCode.toString(),
+            responseCode: "${callback.resultCode}",
             amount: callback.callbackMetadata?.itemMap['Amount'],
             receipt: callback.callbackMetadata?.itemMap['MpesaReceiptNumber'],
           ),
