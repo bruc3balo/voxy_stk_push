@@ -1,48 +1,8 @@
-# ⚡ Dart Starter Function
+# Praline Voxy
 
-A simple starter function. Edit `lib/main.dart` to get started and create something awesome! 🚀
+### Generate Models
 
-## 🧰 Usage
-
-### GET /ping
-
-- Returns a "Pong" message.
-
-**Response**
-
-Sample `200` Response:
-
-```text
-Pong
+```bash
+    dart pub run build_runner build --delete-conflicting-outputs
 ```
 
-### GET, POST, PUT, PATCH, DELETE /
-
-- Returns a "Learn More" JSON response.
-
-**Response**
-
-Sample `200` Response:
-
-```json
-{
-  "motto": "Build like a team of hundreds_",
-  "learn": "https://appwrite.io/docs",
-  "connect": "https://appwrite.io/discord",
-  "getInspired": "https://builtwith.appwrite.io"
-}
-```
-
-## ⚙️ Configuration
-
-| Setting           | Value           |
-| ----------------- | --------------- |
-| Runtime           | Dart (2.17)     |
-| Entrypoint        | `lib/main.dart` |
-| Build Commands    | `dart pub get`  |
-| Permissions       | `any`           |
-| Timeout (Seconds) | 15              |
-
-## 🔒 Environment Variables
-
-No environment variables required.

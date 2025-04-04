@@ -73,9 +73,12 @@ Future<dynamic> main(final context) async {
 
         Map<String, dynamic> params = jsonDecode(json.encode(req.query)) as Map<String, dynamic>;
 
-        String tripId = params['trip_id'];
+        String account = params['account'];
 
-        final MpesaCredentials credentials = credentialsFromEnv(context, account: tripId);
+        final MpesaCredentials credentials = credentialsFromEnv(
+          context,
+          account: account,
+        );
         context.log("MPESA_CREDENTIALS => ${credentials.toString()}");
 
         String? amount = params['amount'] as String?;
@@ -91,7 +94,7 @@ Future<dynamic> main(final context) async {
         }
 
         String? description = params['description'] as String?;
-        description ??= 'Donation';
+        description ??= 'Trip payment';
 
         await sentStkPush(
           amount: int.parse(amount),
@@ -126,7 +129,6 @@ Future<dynamic> main(final context) async {
         break;
 
       case HttpMethods.post:
-
         final String databaseId = Platform.environment['DATABASE_ID']!;
         context.log("DB id => $databaseId");
 
