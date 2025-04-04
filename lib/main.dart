@@ -107,9 +107,8 @@ Future<dynamic> main(final context) async {
         String? description = params['description'] as String?;
         description ??= 'Trip payment';
 
-        Map<String, dynamic> reqRes = {};
-        int reqResStatus = 200;
-        await sentStkPush(
+
+        TaskResult<Map<String, dynamic>> stkResult = await sentStkPush(
           amount: int.parse(amount),
           number: number,
           passKey: credentials.passKey,
@@ -120,16 +119,16 @@ Future<dynamic> main(final context) async {
           businessShortCode: credentials.shortCode,
           callbackUrl: credentials.callbackUrl,
           onLog: (s) => context.log(s),
-          onError: (s) {
-            context.error(s);
-            res.send(s, 400, defaultHeaders);
-          },
-          onSuccess: (map) async {
+        );
+
+        switch (stkResult) {
+          case Success<Map<String, dynamic>>():
             TripPaymentRepository repository = FirestoreTripPaymentRepository(
               projectId: Platform.environment['FIREBASE_PROJECT_ID']!,
             );
 
-            MpesaPaymentResponse response = MpesaPaymentResponse.fromJson(map);
+            MpesaPaymentResponse response =
+                MpesaPaymentResponse.fromJson(stkResult.data);
 
             TaskResult<TripMpesaLog> mpesaLog = await repository.setRequest(
               request: TripMpesaPaymentRequest(
@@ -143,20 +142,17 @@ Future<dynamic> main(final context) async {
             );
             switch (mpesaLog) {
               case Success<TripMpesaLog>():
-                reqRes = map;
-                reqResStatus = 200;
-                break;
+                return res.json(response.toJson(), 200, defaultHeaders);
               case Error<TripMpesaLog>():
-                reqRes = {
-                  'message': 'Payment not saved ${response.checkoutRequestID}'
-                };
-                reqResStatus = 200;
+                context.error(mpesaLog.errorMessage.toString());
+                res.send(mpesaLog.errorMessage.toString(), 400, defaultHeaders);
                 break;
             }
-          },
-        );
-
-        return res.json(reqRes, reqResStatus, defaultHeaders);
+          case Error<Map<String, dynamic>>():
+            context.error(stkResult.errorMessage.toString());
+            res.send(stkResult.errorMessage.toString(), 400, defaultHeaders);
+            return;
+        }
 
       case HttpMethods.post:
         String jsonString = json.encode(context.req.body);
@@ -242,7 +238,7 @@ String createLogException({String? message, Type? type, StackTrace? trace}) {
   return 'Message => $message\nType => ${type?.toString()}\nTrace => ${trace.toString()}';
 }
 
-Future<void> sentStkPush({
+Future<TaskResult<Map<String, dynamic>>> sentStkPush({
   required int amount,
   required String number,
   required String passKey,
@@ -253,60 +249,59 @@ Future<void> sentStkPush({
   required int businessShortCode,
   required String callbackUrl,
   Function(String)? onLog,
-  Function(String)? onError,
-  Function(Map<String, dynamic>)? onSuccess,
+  Function()? onSuccess,
 }) async {
-  String? accessToken = await authenticate(
+  TaskResult<String> accessTokenResult = await authenticate(
     consumerKey: consumerKey,
     consumerSecret: consumerSecret,
-    onError: (s) {
-      print(s);
-    },
   );
-  if (accessToken == null) return;
+  switch (accessTokenResult) {
+    case Success<String>():
+      onLog?.call("Request Authenticated");
 
-  onLog?.call("Request Authenticated");
+      String phoneNumber = number.toString();
 
-  String phoneNumber = number.toString();
+      if (!phoneNumber.startsWith(prefix254.prefix) &&
+          !phoneNumber.startsWith(prefix10.prefix)) {
+        return Error(Exception("Invalid number $number"));
+      }
 
-  if (!phoneNumber.startsWith(prefix254.prefix) &&
-      !phoneNumber.startsWith(prefix10.prefix)) {
-    onError?.call("Invalid number $number");
-    return;
+      if (phoneNumber.startsWith(prefix10.prefix)) {
+        if (phoneNumber.length != prefix10.length) {
+          return Error(Exception(lengthError));
+        }
+
+        phoneNumber =
+            phoneNumber.replaceFirst(prefix10.prefix, prefix254.prefix);
+      }
+      if (phoneNumber.startsWith(prefix254.prefix) &&
+          phoneNumber.length != prefix254.length) {
+        return Error(Exception(lengthError));
+      }
+
+      onLog?.call("Requesting stk push");
+
+      TaskResult<Map<String, dynamic>> stkRes = await initiateStkPush(
+        accessToken: accessTokenResult.data,
+        amount: amount,
+        businessShortCode: businessShortCode,
+        passKey: passKey,
+        phoneNumber: phoneNumber,
+        callbackUrl: callbackUrl,
+        account: account,
+        description: description,
+      );
+
+      switch (stkRes) {
+        case Success<Map<String, dynamic>>():
+          onLog?.call("Stk Push initiated");
+          return Success(stkRes.data);
+        case Error<Map<String, dynamic>>():
+          return Error(stkRes.errorMessage);
+      }
+    case Error<String>():
+      return Error(accessTokenResult.errorMessage);
   }
-
-  if (phoneNumber.startsWith(prefix10.prefix)) {
-    if (phoneNumber.length != prefix10.length) {
-      onError?.call(lengthError);
-      return;
-    }
-
-    phoneNumber = phoneNumber.replaceFirst(prefix10.prefix, prefix254.prefix);
-  }
-  if (phoneNumber.startsWith(prefix254.prefix) &&
-      phoneNumber.length != prefix254.length) {
-    onError?.call(lengthError);
-    return;
-  }
-
-  onLog?.call("Requesting stk push");
-
-  Map<String, dynamic>? stkRes = await initiateStkPush(
-    accessToken: accessToken,
-    amount: amount,
-    businessShortCode: businessShortCode,
-    passKey: passKey,
-    phoneNumber: phoneNumber,
-    callbackUrl: callbackUrl,
-    account: account,
-    description: description,
-    onError: onError,
-  );
-
-  if (stkRes == null) return;
-
-  onLog?.call("Stk Push initiated");
-  onSuccess?.call(stkRes);
 }
 
 void logRequest(context) {

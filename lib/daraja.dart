@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
+import 'package:voxy_stk_push/task_result.dart';
 
 Dio dio = Dio(BaseOptions(baseUrl: 'https://sandbox.safaricom.co.ke/'));
 
 ///Initiate stk push with access token from [authenticate]
-Future<Map<String, dynamic>?> initiateStkPush({
+Future<TaskResult<Map<String, dynamic>>> initiateStkPush({
   required String accessToken,
   required int amount,
   required int businessShortCode,
@@ -14,7 +15,6 @@ Future<Map<String, dynamic>?> initiateStkPush({
   required String callbackUrl,
   required String account,
   required String description,
-  Function(String)? onError,
 }) async {
   String time = timeStamp;
   String pass = password(
@@ -53,26 +53,22 @@ Future<Map<String, dynamic>?> initiateStkPush({
     );
 
     if (res.statusCode != 200) {
-      onError?.call(res.statusMessage ?? 'Failed to send stk push');
-      return null;
+      return Error(Exception(res.statusMessage ?? 'Failed to send stk push'));
     }
 
     Map<String, dynamic> data = res.data;
-    return data;
+    return Success(data);
   } on DioException catch (e, trace) {
-    onError?.call(e.toString());
-    return null;
+    return Error(Exception(e.toString()));
   } catch (e, trace) {
-    onError?.call(e.toString());
-    return null;
+    return Error(Exception(e.toString()));
   }
 }
 
 ///Daraja authentication to get access token
-Future<String?> authenticate({
+Future<TaskResult<String>> authenticate({
   required String consumerKey,
   required String consumerSecret,
-  Function(String)? onError,
 }) async {
   String cred = authCredentials(
     consumerKey: consumerKey,
@@ -82,7 +78,6 @@ Future<String?> authenticate({
   String authorization = 'Basic $basicToken';
 
   try {
-
     Response res = await dio.get(
       'oauth/v1/generate',
       queryParameters: {
@@ -98,22 +93,16 @@ Future<String?> authenticate({
     );
 
     if (res.statusCode != 200) {
-      onError?.call(
-        res.statusMessage ?? 'Failed to authenticate daraja request',
-      );
-      return null;
+      return Error(Exception(res.statusMessage ?? 'Failed to authenticate daraja request'));
     }
 
     var data = res.data as Map<String, dynamic>;
     return data['access_token'];
   } on DioException catch (e, trace) {
-    onError?.call(e.toString());
-    return null;
+    return Error(Exception(e.toString()));
   } catch (e, trace) {
-    onError?.call(e.toString());
-    return null;
+    return Error(Exception(e.toString()));
   }
-
 }
 
 String authCredentials({
