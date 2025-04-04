@@ -4,6 +4,7 @@ import 'package:voxy_stk_push/models.dart';
 import 'package:voxy_stk_push/task_result.dart';
 
 import 'firebase_models.dart';
+import 'main.dart';
 
 abstract class TripPaymentRepository {
   Future<TaskResult<TripMpesaLog>> setRequest({
@@ -22,7 +23,10 @@ class FirestoreTripPaymentRepository implements TripPaymentRepository {
   FirestoreTripPaymentRepository({
     required String projectId,
   }) {
-    Firestore.initialize(projectId);
+    if(!firebaseInit) {
+      Firestore.initialize(projectId);
+      firebaseInit = true;
+    }
   }
 
   @override

@@ -9,6 +9,8 @@ import 'package:voxy_stk_push/task_result.dart';
 import 'daraja.dart';
 import 'models.dart';
 
+bool firebaseInit = false;
+
 const Map<String, String> defaultHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, PATCH, POST",
@@ -61,6 +63,10 @@ Future<dynamic> main(final context) async {
     var res = context.res;
 
     logRequest(context);
+
+    TripPaymentRepository repository = FirestoreTripPaymentRepository(
+      projectId: Platform.environment['FIREBASE_PROJECT_ID']!,
+    );
 
     var method = HttpMethods.findByMethod(context.req.method);
     switch (method) {
@@ -178,9 +184,7 @@ Future<dynamic> main(final context) async {
         bool success = callback.resultCode == 0;
         String paymentId = callback.checkoutRequestID;
 
-        TripPaymentRepository repository = FirestoreTripPaymentRepository(
-          projectId: Platform.environment['FIREBASE_PROJECT_ID']!,
-        );
+
 
         TaskResult<TripMpesaLog> responseResult = await repository.setResponse(
           response: TripMpesaPaymentResponse(
