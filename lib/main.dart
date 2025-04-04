@@ -188,7 +188,7 @@ Future<dynamic> main(final context) async {
 
         TaskResult<TripMpesaLog> responseResult = await repository.setResponse(
           response: TripMpesaPaymentResponse(
-            checkoutRequestId: callback.merchantRequestID,
+            checkoutRequestId: callback.checkoutRequestID,
             merchantRequestId: callback.merchantRequestID,
             responseCode: "${callback.resultCode}",
             amount: "${callback.callbackMetadata?.itemMap['Amount']}",
@@ -204,7 +204,7 @@ Future<dynamic> main(final context) async {
             );
           case Error<TripMpesaLog>():
             return res.send(
-              'Payment not recognized $paymentId',
+              responseResult.errorMessage.toString(),
               404,
               defaultHeaders,
             );
