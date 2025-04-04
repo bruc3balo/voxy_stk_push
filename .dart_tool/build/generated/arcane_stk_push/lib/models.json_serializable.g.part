@@ -1,0 +1,85 @@
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+MpesaCredentials _$MpesaCredentialsFromJson(Map<String, dynamic> json) =>
+    MpesaCredentials(
+      key: json['key'] as String,
+      sec: json['sec'] as String,
+      callbackUrl: json['callbackUrl'] as String,
+      shortCode: json['shortCode'] as int,
+      account: json['account'] as String,
+      passKey: json['passKey'] as String,
+    );
+
+Map<String, dynamic> _$MpesaCredentialsToJson(MpesaCredentials instance) =>
+    <String, dynamic>{
+      'key': instance.key,
+      'sec': instance.sec,
+      'callbackUrl': instance.callbackUrl,
+      'shortCode': instance.shortCode,
+      'account': instance.account,
+      'passKey': instance.passKey,
+    };
+
+StkCallbackResponse _$StkCallbackResponseFromJson(Map<String, dynamic> json) =>
+    StkCallbackResponse(
+      body: Body.fromJson(json['Body'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$StkCallbackResponseToJson(
+        StkCallbackResponse instance) =>
+    <String, dynamic>{
+      'Body': instance.body,
+    };
+
+Body _$BodyFromJson(Map<String, dynamic> json) => Body(
+      stkCallback:
+          StkCallback.fromJson(json['stkCallback'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$BodyToJson(Body instance) => <String, dynamic>{
+      'stkCallback': instance.stkCallback,
+    };
+
+StkCallback _$StkCallbackFromJson(Map<String, dynamic> json) => StkCallback(
+      merchantRequestID: json['MerchantRequestID'] as String,
+      checkoutRequestID: json['CheckoutRequestID'] as String,
+      resultCode: json['ResultCode'] as int,
+      resultDesc: json['ResultDesc'] as String,
+      callbackMetadata: json['CallbackMetadata'] == null
+          ? null
+          : CallbackMetadata.fromJson(
+              json['CallbackMetadata'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$StkCallbackToJson(StkCallback instance) =>
+    <String, dynamic>{
+      'MerchantRequestID': instance.merchantRequestID,
+      'CheckoutRequestID': instance.checkoutRequestID,
+      'ResultCode': instance.resultCode,
+      'ResultDesc': instance.resultDesc,
+      'CallbackMetadata': instance.callbackMetadata,
+    };
+
+CallbackMetadata _$CallbackMetadataFromJson(Map<String, dynamic> json) =>
+    CallbackMetadata(
+      item: (json['Item'] as List<dynamic>)
+          .map((e) => Item.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$CallbackMetadataToJson(CallbackMetadata instance) =>
+    <String, dynamic>{
+      'Item': instance.item,
+    };
+
+Item _$ItemFromJson(Map<String, dynamic> json) => Item(
+      name: json['Name'] as String,
+      value: json['Value'],
+    );
+
+Map<String, dynamic> _$ItemToJson(Item instance) => <String, dynamic>{
+      'Name': instance.name,
+      'Value': instance.value,
+    };
