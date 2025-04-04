@@ -97,7 +97,7 @@ Future<TaskResult<String>> authenticate({
     }
 
     var data = res.data as Map<String, dynamic>;
-    return data['access_token'];
+    return Success(data['access_token']);
   } on DioException catch (e, trace) {
     return Error(Exception(e.toString()));
   } catch (e, trace) {
