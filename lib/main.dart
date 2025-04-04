@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dart_appwrite/dart_appwrite.dart';
+import 'package:voxy_stk_push/firebase_models.dart';
 import 'package:voxy_stk_push/firestore_db.dart';
 import 'package:voxy_stk_push/task_result.dart';
 
@@ -46,7 +47,9 @@ enum HttpMethods {
 
   static HttpMethods? findByMethod(String? method) {
     if (method == null) return null;
-    return HttpMethods.values.where((e) => e.method.toUpperCase() == method.toUpperCase()).firstOrNull;
+    return HttpMethods.values
+        .where((e) => e.method.toUpperCase() == method.toUpperCase())
+        .firstOrNull;
   }
 }
 
@@ -72,7 +75,8 @@ Future<dynamic> main(final context) async {
       case HttpMethods.get:
         context.log("SENDING STK REQUEST");
 
-        Map<String, dynamic> params = jsonDecode(json.encode(req.query)) as Map<String, dynamic>;
+        Map<String, dynamic> params =
+            jsonDecode(json.encode(req.query)) as Map<String, dynamic>;
 
         String? account = params['account'] as String?;
         if (account == null) {
@@ -81,7 +85,6 @@ Future<dynamic> main(final context) async {
         }
 
         context.log("account = ${account}");
-
 
         final MpesaCredentials credentials = credentialsFromEnv(
           context,
@@ -120,24 +123,39 @@ Future<dynamic> main(final context) async {
             context.error(s);
             res.send(s, 400, defaultHeaders);
           },
-          onSuccess: (map) {
+          onSuccess: (map) async {
             TripPaymentRepository repository = FirestoreTripPaymentRepository(
               projectId: Platform.environment['FIREBASE_PROJECT_ID']!,
             );
 
-            repository.setTrip(
-              tripId: account,
-              checkoutId: map['CheckoutRequestID'],
-            );
+            MpesaPaymentResponse response = MpesaPaymentResponse.fromJson(map);
 
-            result = map;
+            TaskResult<TripMpesaLog> mpesaLog = await repository.setRequest(
+              request: TripMpesaPaymentRequest(
+                checkoutRequestId: response.checkoutRequestID,
+                merchantRequestId: response.merchantRequestID,
+                responseCode: response.responseCode,
+                account: account,
+                amount: amount,
+                phoneNumber: number,
+              ),
+            );
+            switch (mpesaLog) {
+              case Success<TripMpesaLog>():
+                result = map;
+                break;
+              case Error<TripMpesaLog>():
+                return res.send(
+                    'Payment not saved ${response.checkoutRequestID}',
+                    500,
+                    defaultHeaders);
+            }
           },
         );
 
         return res.json(result, 200, defaultHeaders);
 
       case HttpMethods.post:
-
         String jsonString = json.encode(context.req.body);
         context.log(jsonString);
 
@@ -147,9 +165,11 @@ Future<dynamic> main(final context) async {
         Map<String, dynamic> jsonMap = jdec as Map<String, dynamic>;
 
         context.log("JSON MAP => ${jsonMap.toString()}");
-        StkCallbackResponse stkCallbackResponse = StkCallbackResponse.fromJson(jsonMap);
+        StkCallbackResponse stkCallbackResponse =
+            StkCallbackResponse.fromJson(jsonMap);
 
-        context.log("STK CALLBACK RES => ${stkCallbackResponse.toJson().toString()}");
+        context.log(
+            "STK CALLBACK RES => ${stkCallbackResponse.toJson().toString()}");
 
         Body body = stkCallbackResponse.body;
         StkCallback callback = body.stkCallback;
@@ -159,32 +179,33 @@ Future<dynamic> main(final context) async {
         bool success = callback.resultCode == 0;
         String paymentId = callback.checkoutRequestID;
 
-
         TripPaymentRepository repository = FirestoreTripPaymentRepository(
           projectId: Platform.environment['FIREBASE_PROJECT_ID']!,
         );
 
-        TaskResult<String?> paymentIdResult = await repository.getTripId(checkoutId: paymentId);
-        switch(paymentIdResult) {
-
-          case Success<String?>():
-            String? tripId = paymentIdResult.data;
-            if(tripId == null) {
-              return res.send('Payment not recognized $paymentId', 404, defaultHeaders);
-            }
-
-            repository.updatePayment(
-              tripId: tripId,
-              paymentId: paymentId,
-              status: success ? PaymentStatus.paid : PaymentStatus.notPaid,
+        TaskResult<TripMpesaLog> responseResult = await repository.setResponse(
+          response: TripMpesaPaymentResponse(
+            checkoutRequestId: callback.merchantRequestID,
+            merchantRequestId: callback.merchantRequestID,
+            responseCode: callback.resultCode.toString(),
+            amount: callback.callbackMetadata?.itemMap['Amount'],
+            receipt: callback.callbackMetadata?.itemMap['MpesaReceiptNumber'],
+          ),
+        );
+        switch (responseResult) {
+          case Success<TripMpesaLog>():
+            return res.send(
+              'Request Completed Successfully',
+              200,
+              defaultHeaders,
             );
-            break;
-          case Error<String?>():
-            return res.send('Payment not recognized $paymentId', 404, defaultHeaders);
+          case Error<TripMpesaLog>():
+            return res.send(
+              'Payment not recognized $paymentId',
+              404,
+              defaultHeaders,
+            );
         }
-
-
-        break;
 
       case _:
         context.error('Method not supported $method');
@@ -196,7 +217,8 @@ Future<dynamic> main(final context) async {
   } on AppwriteException catch (e, trace) {
     context.log(' ==== AppWrite Exceptions ==== ');
 
-    String error = createLogException(message: e.message, type: e.runtimeType, trace: trace);
+    String error = createLogException(
+        message: e.message, type: e.runtimeType, trace: trace);
     context.error(error);
 
     context.log(' ==== END ==== ');
@@ -204,7 +226,8 @@ Future<dynamic> main(final context) async {
   } catch (e, trace) {
     context.log(' ==== Generic Exceptions ==== ');
 
-    String error = createLogException(message: e.toString(), type: e.runtimeType, trace: trace);
+    String error = createLogException(
+        message: e.toString(), type: e.runtimeType, trace: trace);
     context.error(error);
 
     context.log(' ==== END ==== ');
@@ -243,7 +266,8 @@ Future<void> sentStkPush({
 
   String phoneNumber = number.toString();
 
-  if (!phoneNumber.startsWith(prefix254.prefix) && !phoneNumber.startsWith(prefix10.prefix)) {
+  if (!phoneNumber.startsWith(prefix254.prefix) &&
+      !phoneNumber.startsWith(prefix10.prefix)) {
     onError?.call("Invalid number $number");
     return;
   }
@@ -256,7 +280,8 @@ Future<void> sentStkPush({
 
     phoneNumber = phoneNumber.replaceFirst(prefix10.prefix, prefix254.prefix);
   }
-  if (phoneNumber.startsWith(prefix254.prefix) && phoneNumber.length != prefix254.length) {
+  if (phoneNumber.startsWith(prefix254.prefix) &&
+      phoneNumber.length != prefix254.length) {
     onError?.call(lengthError);
     return;
   }
@@ -313,7 +338,8 @@ void logRequest(context) {
   // Raw query params string. For example "limit=12&offset=50"
   context.log("QUERY => ${req.queryString}");
 
-  Map<String, dynamic> params = jsonDecode(json.encode(req.query)) as Map<String, dynamic>;
+  Map<String, dynamic> params =
+      jsonDecode(json.encode(req.query)) as Map<String, dynamic>;
 
   context.log("QUERY => $params");
 

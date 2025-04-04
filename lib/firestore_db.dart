@@ -3,27 +3,21 @@ import 'package:firedart/firestore/firestore.dart';
 import 'package:voxy_stk_push/models.dart';
 import 'package:voxy_stk_push/task_result.dart';
 
+import 'firebase_models.dart';
+
 abstract class TripPaymentRepository {
-  Future<TaskResult<void>> updatePayment({
-    required String tripId,
-    required String paymentId,
-    required PaymentStatus status,
+  Future<TaskResult<TripMpesaLog>> setRequest({
+    required TripMpesaPaymentRequest request,
   });
 
-  Future<TaskResult<void>> setTrip({
-    required String tripId,
-    required String checkoutId,
-  });
-
-  Future<TaskResult<String?>> getTripId({
-    required String checkoutId,
+  Future<TaskResult<TripMpesaLog>> setResponse({
+    required TripMpesaPaymentResponse response,
   });
 }
 
 class FirestoreTripPaymentRepository implements TripPaymentRepository {
-  CollectionReference get tripCheckoutPaymentCollection => Firestore.instance.collection("trips_checkout_map");
-
-  CollectionReference tripPaymentCollection(String tripId) => Firestore.instance.collection("trips").document(tripId).collection('payments');
+  CollectionReference get tripMpesaLogCollection =>
+      Firestore.instance.collection("trip_mpesa_log");
 
   FirestoreTripPaymentRepository({
     required String projectId,
@@ -32,47 +26,44 @@ class FirestoreTripPaymentRepository implements TripPaymentRepository {
   }
 
   @override
-  Future<TaskResult<void>> updatePayment({
-    required String tripId,
-    required String paymentId,
-    required PaymentStatus status,
+  Future<TaskResult<TripMpesaLog>> setRequest({
+    required TripMpesaPaymentRequest request,
+  }) async {
+
+    try {
+      TripMpesaLog tripLog = TripMpesaLog(
+        paymentId: request.checkoutRequestId,
+        tripId: request.account,
+        request: request,
+        response: null,
+      );
+      await tripMpesaLogCollection
+          .document(tripLog.paymentId)
+          .set(tripLog.toJson());
+
+      return Success(tripLog);
+    } catch (e, trace) {
+      return Error(Exception(e));
+    }
+  }
+
+  @override
+  Future<TaskResult<TripMpesaLog>> setResponse({
+    required TripMpesaPaymentResponse response,
   }) async {
     try {
-      await tripPaymentCollection(tripId).document(paymentId).update(
-        {
-          'status': status.name,
-          'updated_at': DateTime.now(),
-        },
-      );
+      var result = await tripMpesaLogCollection
+          .document(response.checkoutRequestId)
+          .get();
 
-      return Success(null);
-    } catch (e, trace) {
-      return Error(Exception(e));
-    }
-  }
+      TripMpesaLog trip = TripMpesaLog.fromJson(result.map);
+      trip.response = response;
 
-  @override
-  Future<TaskResult<String?>> getTripId({required String checkoutId}) async {
-    try {
-      var result = await tripCheckoutPaymentCollection.document(checkoutId).get();
+      await tripMpesaLogCollection
+          .document(trip.paymentId)
+          .set(trip.toJson());
 
-      return Success(result.map['trip_id']);
-    } catch (e, trace) {
-      return Error(Exception(e));
-    }
-  }
-
-  @override
-  Future<TaskResult<void>> setTrip({required String tripId, required String checkoutId}) async {
-    try {
-      await tripCheckoutPaymentCollection.document(checkoutId).set(
-        {
-          'trip_id': tripId,
-          'checkout_id': checkoutId,
-        },
-      );
-
-      return Success(null);
+      return Success(trip);
     } catch (e, trace) {
       return Error(Exception(e));
     }
