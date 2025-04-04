@@ -245,6 +245,8 @@ Future<void> sentStkPush({
     return;
   }
 
+  onLog?.call("Requesting stk push");
+
   Map<String, dynamic>? stkRes = await initiateStkPush(
     accessToken: accessToken,
     amount: amount,

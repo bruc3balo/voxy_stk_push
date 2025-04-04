@@ -42,6 +42,8 @@ Future<Map<String, dynamic>?> initiateStkPush({
     'mpesa/stkpush/v1/processrequest',
     data: body,
     options: Options(
+      sendTimeout: Duration(minutes: 1),
+      receiveTimeout: Duration(minutes: 1),
       headers: {
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
@@ -77,6 +79,8 @@ Future<String?> authenticate({
       'grant_type': 'client_credentials',
     },
     options: Options(
+      sendTimeout: Duration(minutes: 1),
+      receiveTimeout: Duration(minutes: 1),
       headers: {
         'Authorization': authorization,
       },
