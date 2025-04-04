@@ -38,26 +38,34 @@ Future<Map<String, dynamic>?> initiateStkPush({
     'TransactionDesc': description,
   };
 
-  Response res = await dio.post(
-    'mpesa/stkpush/v1/processrequest',
-    data: body,
-    options: Options(
-      sendTimeout: Duration(minutes: 1),
-      receiveTimeout: Duration(minutes: 1),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-    ),
-  );
+  try {
+    Response res = await dio.post(
+      'mpesa/stkpush/v1/processrequest',
+      data: body,
+      options: Options(
+        sendTimeout: Duration(minutes: 1),
+        receiveTimeout: Duration(minutes: 1),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
 
-  if (res.statusCode != 200) {
-    onError?.call(res.statusMessage ?? 'Failed to send stk push');
+    if (res.statusCode != 200) {
+      onError?.call(res.statusMessage ?? 'Failed to send stk push');
+      return null;
+    }
+
+    Map<String, dynamic> data = res.data;
+    return data;
+  } on DioException catch (e, trace) {
+    onError?.call(e.toString());
+    return null;
+  } catch (e, trace) {
+    onError?.call(e.toString());
     return null;
   }
-
-  Map<String, dynamic> data = res.data;
-  return data;
 }
 
 ///Daraja authentication to get access token
