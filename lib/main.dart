@@ -73,11 +73,14 @@ Future<dynamic> main(final context) async {
 
         Map<String, dynamic> params = jsonDecode(json.encode(req.query)) as Map<String, dynamic>;
 
-         String? account = params['account'] as String?;
+        String? account = params['account'] as String?;
         if (account == null) {
           res.send('Account required', 400, defaultHeaders);
           return;
         }
+
+        context.log("account = ${account}");
+
 
         final MpesaCredentials credentials = credentialsFromEnv(
           context,
@@ -291,6 +294,10 @@ void logRequest(context) {
 
   // Raw query params string. For example "limit=12&offset=50"
   context.log("QUERY => ${req.queryString}");
+
+  Map<String, dynamic> params = jsonDecode(json.encode(req.query)) as Map<String, dynamic>;
+
+  context.log("QUERY => $params");
 
   context.log("REQUEST HAS BEEN LOGGED");
 }
