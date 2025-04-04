@@ -191,7 +191,7 @@ Future<dynamic> main(final context) async {
             checkoutRequestId: callback.merchantRequestID,
             merchantRequestId: callback.merchantRequestID,
             responseCode: "${callback.resultCode}",
-            amount: callback.callbackMetadata?.itemMap['Amount'],
+            amount: "${callback.callbackMetadata?.itemMap['Amount']}",
             receipt: callback.callbackMetadata?.itemMap['MpesaReceiptNumber'],
           ),
         );
