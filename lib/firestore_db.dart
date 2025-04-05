@@ -14,16 +14,27 @@ abstract class TripPaymentRepository {
   Future<TaskResult<TripMpesaLog>> setResponse({
     required TripMpesaPaymentResponse response,
   });
+
+  Future<TaskResult<void>> updateTripPayment({
+    required String tripId,
+    required String paymentId,
+    required PaymentStatus status,
+  });
 }
 
 class FirestoreTripPaymentRepository implements TripPaymentRepository {
   CollectionReference get tripMpesaLogCollection =>
       Firestore.instance.collection("trip_mpesa_log");
 
+  CollectionReference tripPaymentCollection(String tripId) => Firestore.instance
+      .collection('trips')
+      .document(tripId)
+      .collection('payments');
+
   FirestoreTripPaymentRepository({
     required String projectId,
   }) {
-    if(!firebaseInit) {
+    if (!firebaseInit) {
       Firestore.initialize(projectId);
       firebaseInit = true;
     }
@@ -33,7 +44,6 @@ class FirestoreTripPaymentRepository implements TripPaymentRepository {
   Future<TaskResult<TripMpesaLog>> setRequest({
     required TripMpesaPaymentRequest request,
   }) async {
-
     try {
       TripMpesaLog tripLog = TripMpesaLog(
         paymentId: request.checkoutRequestId,
@@ -63,11 +73,27 @@ class FirestoreTripPaymentRepository implements TripPaymentRepository {
       TripMpesaLog trip = TripMpesaLog.fromJson(result.map);
       trip.response = response;
 
-      await tripMpesaLogCollection
-          .document(trip.paymentId)
-          .set(trip.toJson());
+      await tripMpesaLogCollection.document(trip.paymentId).set(trip.toJson());
 
       return Success(trip);
+    } catch (e, trace) {
+      return Error(Exception(e));
+    }
+  }
+
+  @override
+  Future<TaskResult<void>> updateTripPayment({
+    required String tripId,
+    required String paymentId,
+    required PaymentStatus status,
+  }) async {
+    try {
+
+      await tripPaymentCollection(tripId)
+          .document(paymentId)
+          .update({'status': status.name});
+
+      return Success(null);
     } catch (e, trace) {
       return Error(Exception(e));
     }

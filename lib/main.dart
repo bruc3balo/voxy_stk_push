@@ -113,7 +113,6 @@ Future<dynamic> main(final context) async {
         String? description = params['description'] as String?;
         description ??= 'Trip payment';
 
-
         TaskResult<Map<String, dynamic>> stkResult = await sentStkPush(
           amount: int.parse(amount),
           number: number,
@@ -184,8 +183,6 @@ Future<dynamic> main(final context) async {
         bool success = callback.resultCode == 0;
         String paymentId = callback.checkoutRequestID;
 
-
-
         TaskResult<TripMpesaLog> responseResult = await repository.setResponse(
           response: TripMpesaPaymentResponse(
             checkoutRequestId: callback.checkoutRequestID,
@@ -197,6 +194,15 @@ Future<dynamic> main(final context) async {
         );
         switch (responseResult) {
           case Success<TripMpesaLog>():
+            TripMpesaLog trip = responseResult.data;
+            TripMpesaPaymentResponse response = trip.response!;
+            PaymentStatus status = response.responseCode == '0' ? PaymentStatus.paid : PaymentStatus.notPaid;
+            repository.updateTripPayment(
+              tripId: trip.tripId,
+              paymentId: paymentId,
+              status: status,
+            );
+
             return res.send(
               'Request Completed Successfully',
               200,

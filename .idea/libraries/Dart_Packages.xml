@@ -16,6 +16,13 @@
             </list>
           </value>
         </entry>
+        <entry key="archive">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/archive-3.6.1/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="args">
           <value>
             <list>
@@ -163,6 +170,13 @@
             </list>
           </value>
         </entry>
+        <entry key="firedart">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/firedart-0.9.8/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="fixnum">
           <value>
             <list>
@@ -184,6 +198,13 @@
             </list>
           </value>
         </entry>
+        <entry key="googleapis_auth">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/googleapis_auth-1.4.1/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="graphs">
           <value>
             <list>
@@ -191,10 +212,24 @@
             </list>
           </value>
         </entry>
+        <entry key="grpc">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/grpc-3.2.4/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="http">
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/http-0.13.6/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="http2">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/http2-2.3.1/lib" />
             </list>
           </value>
         </entry>
@@ -300,6 +335,13 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/pool-1.5.1/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="protobuf">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/protobuf-3.1.0/lib" />
             </list>
           </value>
         </entry>
@@ -434,6 +476,7 @@
     <CLASSES>
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/_fe_analyzer_shared-65.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/analyzer-6.3.0/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/archive-3.6.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/args-2.4.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/async-2.11.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/boolean_selector-2.1.1/lib" />
@@ -455,11 +498,15 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/dart_style-2.3.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/dio-5.4.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/file-7.0.0/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/firedart-0.9.8/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/fixnum-1.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/frontend_server_client-3.2.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/glob-2.1.2/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/googleapis_auth-1.4.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/graphs-2.3.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/grpc-3.2.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/http-0.13.6/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/http2-2.3.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/http_multi_server-3.2.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/http_parser-4.0.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/intl-0.19.0/lib" />
@@ -475,6 +522,7 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/package_config-2.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path-1.9.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pool-1.5.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/protobuf-3.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pub_semver-2.1.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pubspec_parse-1.2.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/shelf-1.4.1/lib" />
