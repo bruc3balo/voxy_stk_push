@@ -59,7 +59,7 @@ Future<TaskResult<Map<String, dynamic>>> initiateStkPush({
     Map<String, dynamic> data = res.data;
     return Success(data);
   } on DioException catch (e, trace) {
-    return Error(Exception(e.toString()));
+    return Error(Exception(e.response?.data.toString()));
   } catch (e, trace) {
     return Error(Exception(e.toString()));
   }
@@ -100,7 +100,7 @@ Future<TaskResult<String>> authenticate({
     var data = res.data as Map<String, dynamic>;
     return Success(data['access_token']);
   } on DioException catch (e, trace) {
-    return Error(Exception(e.toString()));
+    return Error(Exception(e.response?.data.toString()));
   } catch (e, trace) {
     return Error(Exception(e.toString()));
   }
