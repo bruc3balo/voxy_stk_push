@@ -285,10 +285,15 @@ Future<TaskResult<Map<String, dynamic>>> sentStkPush({
   Function(String)? onLog,
   Function()? onSuccess,
 }) async {
+  onLog?.call("authenticating");
+
   TaskResult<String> accessTokenResult = await authenticate(
     consumerKey: consumerKey,
     consumerSecret: consumerSecret,
   );
+
+  onLog?.call("accessTokenResult $accessTokenResult");
+
   switch (accessTokenResult) {
     case Success<String>():
       onLog?.call("Request Authenticated");
