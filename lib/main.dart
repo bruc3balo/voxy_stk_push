@@ -84,6 +84,9 @@ Future<dynamic> main(final context) async {
         Map<String, dynamic> params =
             jsonDecode(json.encode(req.query)) as Map<String, dynamic>;
 
+        context.log(" params = ${params}");
+
+
         String? account = params['account'] as String?;
         if (account == null) {
           res.send('Account required', 400, defaultHeaders);
@@ -104,14 +107,21 @@ Future<dynamic> main(final context) async {
           return;
         }
 
+        context.log("amount = ${amount}");
+
+
         String? number = params['number'] as String?;
         if (number == null) {
           res.send('Number required', 400, defaultHeaders);
           return;
         }
 
+        context.log("amount = ${number}");
+
         String? description = params['description'] as String?;
         description ??= 'Trip payment';
+
+        context.log("description = ${description}");
 
         TaskResult<Map<String, dynamic>> stkResult = await sentStkPush(
           amount: int.parse(amount),
@@ -126,14 +136,21 @@ Future<dynamic> main(final context) async {
           onLog: (s) => context.log(s),
         );
 
+        context.log("stk result = ${stkResult}");
+
         switch (stkResult) {
           case Success<Map<String, dynamic>>():
+            context.log("stk result = success");
+
             TripPaymentRepository repository = FirestoreTripPaymentRepository(
               projectId: Platform.environment['FIREBASE_PROJECT_ID']!,
             );
 
             MpesaPaymentResponse response =
                 MpesaPaymentResponse.fromJson(stkResult.data);
+
+            context.log("MpesaPaymentResponse ${response}");
+
 
             TaskResult<TripMpesaLog> mpesaLog = await repository.setRequest(
               request: TripMpesaPaymentRequest(
@@ -145,6 +162,9 @@ Future<dynamic> main(final context) async {
                 phoneNumber: number,
               ),
             );
+
+            context.log("mpesaLog ${mpesaLog}");
+
             switch (mpesaLog) {
               case Success<TripMpesaLog>():
                 return res.json(response.toJson(), 200, defaultHeaders);
@@ -192,6 +212,9 @@ Future<dynamic> main(final context) async {
             receipt: callback.callbackMetadata?.itemMap['MpesaReceiptNumber'],
           ),
         );
+
+        context.log("responseResult ${responseResult}");
+
         switch (responseResult) {
           case Success<TripMpesaLog>():
             TripMpesaLog trip = responseResult.data;
@@ -209,6 +232,7 @@ Future<dynamic> main(final context) async {
               defaultHeaders,
             );
           case Error<TripMpesaLog>():
+            context.error(responseResult.errorMessage.toString());
             return res.send(
               responseResult.errorMessage.toString(),
               404,
