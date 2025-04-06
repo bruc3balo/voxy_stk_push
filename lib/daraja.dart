@@ -93,14 +93,18 @@ Future<TaskResult<String>> authenticate({
     );
 
     if (res.statusCode != 200) {
-      return Error(Exception(
-          res.statusMessage ?? 'Failed to authenticate daraja request'));
+      return Error(
+        Exception(
+          res.statusMessage ?? 'Failed to authenticate daraja request',
+        ),
+      );
     }
 
     var data = res.data as Map<String, dynamic>;
     return Success(data['access_token']);
   } on DioException catch (e, trace) {
-    return Error(Exception(e.response?.data.toString() ?? e.message ?? e.type.name));
+    return Error(
+        Exception(e.response?.data.toString() ?? e.message ?? e.type.name));
   } catch (e, trace) {
     return Error(Exception(e.toString()));
   }

@@ -3,6 +3,7 @@ sealed class TaskResult<T> {}
 
 class Success<T> extends TaskResult<T> {
   final T data;
+
   Success(this.data);
 
   @override
@@ -11,6 +12,7 @@ class Success<T> extends TaskResult<T> {
 
 class Error<T> extends TaskResult<T> {
   final Exception errorMessage;
+
   Error(this.errorMessage);
 
   @override

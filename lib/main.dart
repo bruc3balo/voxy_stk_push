@@ -339,6 +339,7 @@ Future<TaskResult<Map<String, dynamic>>> sentStkPush({
           return Error(stkRes.errorMessage);
       }
     case Error<String>():
+      onLog?.call("Stk Push E: ${accessTokenResult.errorMessage}");
       return Error(accessTokenResult.errorMessage);
   }
 }
